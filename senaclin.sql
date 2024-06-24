@@ -281,3 +281,23 @@ que a marcou */
     
   /*C - Criar uma query que traga quantas consultas existem 
 na clínica */  
+SELECT COUNT(idconsulta) AS 'Quantidade de consultas' 
+FROM consulta
+
+
+/*D - Criar uma query que traga o nome do paciente, o email,
+o tipo sanguineo e a data de suas consultas
+mas somente dos pacientes que possuem email*/
+SELECT nomepaciente, email, tiposanguino, datahoraconsulta FROM paciente
+INNER JOIN consulta
+ON consulta.idpaciente = paciente.idpaciente
+
+/*E - Criar uma query que traga o nome de TODOS OS paciente, 
+o nome do médico, a data da consulta
+independente de os pacientes possuírem consultas */
+SELECT nomepaciente, nomemedico, datahoraconsulta FROM paciente
+LEFT JOIN consulta
+ON consulta.idpaciente = paciente.idpaciente
+LEFT JOIN medico
+ON medico.idmedico = consulta.idmedico
+
