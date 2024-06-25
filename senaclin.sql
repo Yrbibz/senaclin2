@@ -291,6 +291,7 @@ mas somente dos pacientes que possuem email*/
 SELECT nomepaciente, email, tiposanguino, datahoraconsulta FROM paciente
 INNER JOIN consulta
 ON consulta.idpaciente = paciente.idpaciente
+WHERE email LIKE '%@%'
 
 /*E - Criar uma query que traga o nome de TODOS OS paciente, 
 o nome do médico, a data da consulta
@@ -301,3 +302,9 @@ ON consulta.idpaciente = paciente.idpaciente
 LEFT JOIN medico
 ON medico.idmedico = consulta.idmedico
 
+SELECT * FROM consulta
+SELECT * FROM paciente
+
+INSERT INTO consulta 
+VALUES
+(3, 5, 2, 3, '2024-12-25', 0, 'Tá feia a situação', NULL);
