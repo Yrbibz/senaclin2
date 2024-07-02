@@ -228,12 +228,7 @@ SELECT tiposanguino AS 'Tipos Sangnuineos',
 GROUP BY tiposanguino 
 ORDER BY COUNT(idpaciente)  DESC 
 
- SELECT tiposanguino AS 'Tipos Sangnuineos',
-    COUNT(idpaciente) AS 'Total pacientes'
-    FROM paciente
-GROUP BY tiposanguino 
-HAVING COUNT(idpaciente) >=2
-ORDER BY COUNT(idpaciente)  DESC 
+0
 
 
 /*join*/
@@ -270,13 +265,12 @@ dele, e a data da consulta que ele marcou */
    /*B - Criar uma query que traga o nome do paciente, seu documento,
 o nome do médico, o crm, a data da consulta e o recepcionista 
 que a marcou */
- 
     SELECT nomemedico, crma, datahoraconsulta, nomepaciente, cpf, nomerecepcionista FROM medico
     INNER JOIN consulta 
     ON medico.idmedico = consulta.idmedico 
     INNER JOIN paciente 
     ON  consulta.idpaciente = paciente.idpaciente
-   INNER JOIN recepcionista
+    INNER JOIN recepcionista
     ON  consulta.idrecepcionista = recepcionista.idrecepcionista
     
   /*C - Criar uma query que traga quantas consultas existem 
@@ -288,9 +282,8 @@ FROM consulta
 /*D - Criar uma query que traga o nome do paciente, o email,
 o tipo sanguineo e a data de suas consultas
 mas somente dos pacientes que possuem email*/
-SELECT nomepaciente, email, tiposanguino, datahoraconsulta FROM paciente
-INNER JOIN consulta
-ON consulta.idpaciente = paciente.idpaciente
+SELECT nomepaciente AS 'Nome do paciente', email, tiposanguino AS 'Tipo Sanguíneo', datahoraconsulta AS 'Data e hora da consulta' FROM paciente
+INNER JOIN consulta ON paciente.idpaciente = consulta.idpaciente
 WHERE email LIKE '%@%'
 
 /*E - Criar uma query que traga o nome de TODOS OS paciente, 
@@ -298,9 +291,9 @@ o nome do médico, a data da consulta
 independente de os pacientes possuírem consultas */
 SELECT nomepaciente, nomemedico, datahoraconsulta FROM paciente
 LEFT JOIN consulta
-ON consulta.idpaciente = paciente.idpaciente
+ON paciente.idpaciente = consulta.idpaciente
 LEFT JOIN medico
-ON medico.idmedico = consulta.idmedico
+ON consulta.idmedico = medico.idmedico
 
 SELECT * FROM consulta
 SELECT * FROM paciente
@@ -308,3 +301,117 @@ SELECT * FROM paciente
 INSERT INTO consulta 
 VALUES
 (3, 5, 2, 3, '2024-12-25', 0, 'Tá feia a situação', NULL);
+
+/********************************************************************************************************************************************************/
+
+SELECT COUNT(consulta.idpaciente) AS 'Quantidade de consultas', tiposanguino AS 'Tipo Sanguíneo' 
+FROM paciente 
+INNER JOIN consulta
+ON paciente.idpaciente = consulta.idpaciente
+GROUP BY tiposanguino
+
+SELECT * FROM consultanovaclin
+SELECT * FROM paciente
+
+/*criando view*/
+CREATE VIEW vw_relatorioConsulta
+  AS
+  SELECT nomemedico, crma, datahoraconsulta, nomepaciente, cpf, nomerecepcionista FROM medico
+    INNER JOIN consulta 
+    ON medico.idmedico = consulta.idmedico 
+    INNER JOIN paciente 
+    ON  consulta.idpaciente = paciente.idpaciente
+    INNER JOIN recepcionista
+    ON  consulta.idrecepcionista = recepcionista.idrecepcionista
+    
+    
+    /*puxando view*/
+    SELECT cpf, nomepaciente, nomerecepcionista FROM vw_relatorioConsulta
+    
+    
+/*Stored procedures*/
+CREATE PROCEDURE pi_recepcionista
+(IN
+nomerecepcionista VARCHAR (50),
+loginrecepcionista VARCHAR (50),
+senha CHAR (8),
+celular CHAR (11),
+nomeLogradouro VARCHAR (50),
+numero VARCHAR (7),
+complemento VARCHAR (30),
+cidade VARCHAR (30),
+cep CHAR (8),
+estado CHAR (2))
+INSERT INTO recepcionista 
+(nomerecepcionista, loginrecepcionista, senha, celular, 
+nomeLogradouro, numero, complemento, cidade, cep, estado)
+VALUES (nomerecepcionista, loginrecepcionista, senha, celular, 
+nomeLogradouro, numero, complemento, cidade, cep, estado); 
+
+/*chamar stored procedures*/
+CALL pi_recepcionista ('Rosa da Silva', 'rosa.silva@gmail.com', '22445677', '997455994', 'Rua Patriarca', '67', NULL, 'São Paulo', '11000000', 'SP');
+
+SELECT * FROM  recepcionista
+
+DELETE FROM recepcionista WHERE idrecepcionista = 5
+  
+'Rosa da Silva', 'rosa.silva@gmail.com', '22445677', '997455994', 'Rua Patriarca', '67', NULL, 'São Paulo', '11000000', 'SP'
+
+/*------------------------------------------*/
+/*escluindo recepcionsita recem adcionada*/
+senaclinCREATE PROCEDURE pd_recepcionista
+(IN param_idRecepcionista INT)
+DELETE FROM recepcionista
+WHERE idrecepcionista = param_idrecepcionista; 
+
+CALL pd_recepcionista(4)
+
+/*---------------------------------------------------*/
+/*mostre o nome de todos conforme o tipo sanguineo*/
+CREATE PROCEDURE ps_lista
+(IN tiposanguineo VARCHAR(3))
+SELECT nomepaciente, tiposanguino FROM paciente
+WHERE tiposanguino = tiposanguineo;
+
+CALL ps_lista ('O+')
+
+SELECT * FROM paciente
+/*---------------------------------------------------------------------------------------------------------------*/
+CREATE PROCEDURE ps_medicoEConsulta
+(IN param_idmedico INT)
+SELECT idmedico, datahoraconsulta FROM consulta
+WHERE idmedico = param_idmedico
+ORDER BY datahoraconsulta ASC;
+
+CALL ps_medicoEConsulta (2)
+
+SELECT * FROM consulta
+/*-------------------------------------------------------------------------------*/
+CREATE PROCEDURE ps_totalConsultas
+( )
+SELECT COUNT(*) FROM consulta;
+
+CALL ps_totalConsultas
+/*-------------------------------------------------------------------------------------*/
+/*DESAFIO*/
+CREATE PROCEDURE ps_listona
+(IN p_nomepaciente VARCHAR(50))
+SELECT nomepaciente, datahoraconsulta, nomemedico FROM consulta
+INNER JOIN paciente ON consulta.idpaciente = paciente.idpaciente
+INNER JOIN medico ON consulta.idmedico = medico.idmedico
+WHERE nomepaciente = p_nomepaciente;
+
+CALL ps_listona ('Arley')
+SELECT * FROM paciente
+
+/*Transições em bancos de dados*/
+
+
+START TRANSACTION
+
+DELETE FROM consulta
+
+ROLLBACK
+
+
+SELECT * FROM consulta
